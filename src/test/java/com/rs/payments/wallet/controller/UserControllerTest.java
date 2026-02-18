@@ -14,7 +14,10 @@ import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+
 
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {
@@ -35,10 +38,10 @@ class UserControllerTest {
         when(userService.createUser(any(User.class))).thenReturn(createdUser);
 
         // When
-        ResponseEntity<User> response = userController.createUser(request);
+        ResponseEntity<?> response = userController.createUser(request);
 
         // Then
-        assertEquals(200, response.getStatusCode().value());
+        assertEquals(201, response.getStatusCode().value());
         assertEquals(createdUser, response.getBody());
         verify(userService, times(1)).createUser(any(User.class));
     }

@@ -26,7 +26,7 @@ class UserIntegrationTest extends BaseIntegrationTest {
         String url = "http://localhost:" + port + "/users";
         ResponseEntity<User> response = restTemplate.postForEntity(url, request, User.class);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getId()).isNotNull();
         assertThat(response.getBody().getUsername()).isEqualTo("testuser");
@@ -46,7 +46,7 @@ class UserIntegrationTest extends BaseIntegrationTest {
         String url = "http://localhost:" + port + "/users";
         ResponseEntity<User> response = restTemplate.postForEntity(url, entity, User.class);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getId()).isNotEqualTo(providedId);
         assertThat(response.getBody().getUsername()).isEqualTo("testuser2");

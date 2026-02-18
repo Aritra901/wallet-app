@@ -1,6 +1,7 @@
 package com.rs.payments.wallet.controller;
 
-import com.rs.payments.wallet.dto.CreateWalletRequest;
+import com.rs.payments.wallet.dto.*;
+import com.rs.payments.wallet.exception.ResourceNotFoundException;
 import com.rs.payments.wallet.model.Wallet;
 import com.rs.payments.wallet.service.WalletService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,12 +9,14 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/wallets")
@@ -42,8 +45,96 @@ public class WalletController {
             }
     )
     @PostMapping
-    public ResponseEntity<Wallet> createWallet(@Valid @RequestBody CreateWalletRequest request) {
-        Wallet wallet = walletService.createWalletForUser(request.getUserId());
-        return ResponseEntity.ok(wallet);
+    public ResponseEntity<?> createWallet(@Valid @RequestBody CreateWalletRequest request) {
+/*        Wallet wallet = walletService.createWalletForUser(request.getUserId());
+        return ResponseEntity.ok(wallet);*/
+
+            Wallet wallet = walletService.createWalletForUser(request.getUserId());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(wallet);
+
+
     }
+
+    @PostMapping("/{id}/deposit")
+    public ResponseEntity<?> deposit(
+            @PathVariable UUID id,
+            @Valid @RequestBody DepositRequest request) {
+
+        try {
+            Wallet updatedWallet = walletService.deposit(id, request.getAmount());
+            return ResponseEntity.ok(updatedWallet);
+
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("Wallet not found");
+
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(ex.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/withdraw")
+    public ResponseEntity<?> withdraw(
+            @PathVariable UUID id,
+            @Valid @RequestBody WithdrawRequest request) {
+
+        try {
+            Wallet updatedWallet = walletService.withdraw(id, request.getAmount());
+            return ResponseEntity.ok(updatedWallet);
+
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("Wallet not found");
+
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(ex.getMessage());
+        }
+    }
+
+
+    @PostMapping("/transfers")
+    public ResponseEntity<?> transfer(@Valid @RequestBody TransferRequest request) {
+
+        try {
+            TransferResponse response = walletService.transfer(
+                    request.getFromWalletId(),
+                    request.getToWalletId(),
+                    request.getAmount()
+            );
+
+            return ResponseEntity.ok(response);
+
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(ex.getMessage());
+
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(ex.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}/balance")
+    public ResponseEntity<?> getBalance(@PathVariable UUID id) {
+
+        try {
+            BigDecimal balance = walletService.getBalance(id);
+            return ResponseEntity.ok(balance);
+
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("Wallet not found");
+        }
+    }
+
 }

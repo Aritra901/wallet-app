@@ -15,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class WalletControllerTest {
@@ -42,10 +44,10 @@ class WalletControllerTest {
         when(walletService.createWalletForUser(userId)).thenReturn(wallet);
 
         // When
-        ResponseEntity<Wallet> response = walletController.createWallet(request);
+        ResponseEntity<?> response = walletController.createWallet(request);
 
         // Then
-        assertEquals(200, response.getStatusCode().value());
+        assertEquals(201, response.getStatusCode().value());
         assertEquals(wallet, response.getBody());
         verify(walletService, times(1)).createWalletForUser(userId);
     }

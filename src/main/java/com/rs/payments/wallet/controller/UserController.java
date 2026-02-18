@@ -53,7 +53,6 @@ public class UserController {
 //        user.setEmail(request.getEmail());
 //        User created = userService.createUser(user);
 //        return ResponseEntity.ok(created);
-        try {
             User user = new User();
             user.setUsername(request.getUsername());
             user.setEmail(request.getEmail());
@@ -62,13 +61,5 @@ public class UserController {
 
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
 
-        } catch (DataIntegrityViolationException ex) {
-            Map<String, String> error = new HashMap<>();
-            error.put("message", "Duplicate username or email");
-
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body(error);
-        }
     }
 }

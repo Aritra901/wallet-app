@@ -9,11 +9,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -42,11 +47,28 @@ public class UserController {
             }
     )
     @PostMapping
-    public ResponseEntity<User> createUser(@Valid @RequestBody CreateUserRequest request) {
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        User created = userService.createUser(user);
-        return ResponseEntity.ok(created);
+    public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserRequest request) {
+//        User user = new User();
+//        user.setUsername(request.getUsername());
+//        user.setEmail(request.getEmail());
+//        User created = userService.createUser(user);
+//        return ResponseEntity.ok(created);
+        try {
+            User user = new User();
+            user.setUsername(request.getUsername());
+            user.setEmail(request.getEmail());
+
+            User created = userService.createUser(user);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+
+        } catch (DataIntegrityViolationException ex) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "Duplicate username or email");
+
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(error);
+        }
     }
 }
